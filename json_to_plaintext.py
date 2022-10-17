@@ -22,7 +22,7 @@ parser.add_argument("--target-lang", default="en")
 parser.add_argument("--output", type=argparse.FileType("w"), default=sys.stdout)
 parser.add_argument("--dir", "-d", default=BASEDIR / "data" / "wsd_testset_corpora_de_en")
 parser.add_argument("--max-sents", "-ms", type=int, default=0, help="Maximum number of context sentences")
-parser.add_argument("--max-tokens", "-m", type=int, default=0, help="Maximum length in subword tokens")
+parser.add_argument("--max-tokens", "-m", type=int, default=250, help="Maximum length in subword tokens (default: %(default)s)")
 parser.add_argument("--sents-before", "-sb", type=int, default=None, help="Num sentences previous context")
 parser.add_argument("--tokens-before", "-tb", type=int, default=None, help="Num tokens in previous context")
 parser.add_argument("--separator", default=" <eos> ")
@@ -40,12 +40,11 @@ documents = read_dir_recursive(args.dir, args.source_lang, args.target_lang)
 jsondata = json.load(open(args.json_file))
 
 for sentence in jsondata:
-
     filename = sentence["origin"]
     if not filename in documents:
         print("Fatal: missing file: {filename}", file=sys.stderr)
 
-    lineno = int(sentence["sentence number"])
+    lineno = int(sentence["sentence number"]) - 1
 
     source = sentence["source"]
     reference = sentence["reference"]
@@ -71,9 +70,8 @@ for sentence in jsondata:
     source_line = args.separator.join(source_lines)
     target_line = args.separator.join(target_lines)
 
-    print(target_index, "correct", sentence["word in source"], source_line, target_line, sep="\t")
+    print(target_index, "correct", sentence["original translation"], source_line, target_line, sep="\t")
     for error in sentence['errors']:
-        print(sentence['source'], sentence['contrastive'], sep="\t", file=args.output)
         target_lines[target_index] = error["contrastive"]
         target_line = args.separator.join(target_lines)
         print(target_index, "contrastive", error["replacement"], source_line, target_line, sep="\t")
