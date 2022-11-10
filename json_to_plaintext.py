@@ -16,7 +16,7 @@ BASEDIR = Path(__file__).parent
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("json_file", default="de-en.final.json")
+parser.add_argument("--json_file", default=BASEDIR/"de-en.final.json")
 parser.add_argument("--source-lang", default="de")
 parser.add_argument("--target-lang", default="en")
 parser.add_argument("--output", type=argparse.FileType("w"), default=sys.stdout)
@@ -36,13 +36,14 @@ if args.spm:
     spm = SentencePieceProcessor(model_file=args.spm)
 
 
-documents = read_dir_recursive(args.dir, args.source_lang, args.target_lang)
+documents = read_dir_recursive(args.dir, args.source_lang, args.target_lang, remove_ext=True)
 jsondata = json.load(open(args.json_file))
 
 for sentence in jsondata:
     filename = sentence["origin"]
     if not filename in documents:
         print("Fatal: missing file: {filename}", file=sys.stderr)
+        print(documents.keys(), file=sys.stderr)
 
     lineno = int(sentence["sentence number"]) - 1
 
